@@ -54,7 +54,7 @@ def step1_validate_param(state: ImportGraphState):
     return pdf_path_obj, local_dir_obj
 
 
-def step2_upload_pdf(pdf_path_obj: Path)-> str:
+def step2_upload_pdf(pdf_path_obj: Path) -> str:
     token = os.getenv("MINERU_API_TOKEN")
     base_url = os.getenv("MINERU_BASE_URL")
     url = f"{base_url}/file-urls/batch"
@@ -83,7 +83,7 @@ def step2_upload_pdf(pdf_path_obj: Path)-> str:
     try:
         with open(file=pdf_path_obj, mode="rb") as f:
             res_upload = session.put(url=upload_url, data=f)
-            if res_upload.status_code != 200 or res_upload.json()["code"]!=0:
+            if res_upload.status_code != 200 or res_upload.json()["code"] != 0:
                 logger.error("[step2_upload_pdf]请求minerU上传文件失败，请检查输入文件路径是否正确！！ ")
                 raise RuntimeError("[step2_upload_pdf]请求minerU上传文件失败，请检查输入文件路径是否正确！！")
     except Exception as e:
@@ -93,17 +93,17 @@ def step2_upload_pdf(pdf_path_obj: Path)-> str:
         session.close()
 
     # 3. 轮询上传结果获取文件
-    batch_get_task_result_url =f"{base_url}/extract-results/batch/{batch_id}"
+    batch_get_task_result_url = f"{base_url}/extract-results/batch/{batch_id}"
     timeout_seconds = 600  # 1s -> 1页pdf
-    poll_interval = 3  #间隔时间是3秒
-    start_time = time.time() # 进去起始时间
+    poll_interval = 3  # 间隔时间是3秒
+    start_time = time.time()  # 进去起始时间
     while True:
         # 超时判断
-        if time.time() -start_time > timeout_seconds:
+        if time.time() - start_time > timeout_seconds:
             logger.error("[step2_upload_pdf]请求minerU接口超时！！ ")
             raise TimeoutError("[step2_upload_pdf]请求minerU接口超时！！ ")
         task_result = requests.get(batch_get_task_result_url, headers=header)
-        if task_result.status_code!=200 or task_result.json()["code"]!=0:
+        if task_result.status_code != 200 or task_result.json()["code"] != 0:
             logger.error("[step2_upload_pdf]获取上传任务结果失败 ")
             raise RuntimeError("[step2_upload_pdf]获取上传任务结果失败")
         # 上传任务结果，取第一个
@@ -113,13 +113,19 @@ def step2_upload_pdf(pdf_path_obj: Path)-> str:
         else:
             # 说明可以拿到结果
             full_zip_url = extract_result["full_zip_url"]
-            logger.info(f"已经完成pdf的解析，耗时：{time.time()-start_time}s,解析结果：{full_zip_url}")
+            logger.info(f"已经完成pdf的解析，耗时：{time.time() - start_time}s,解析结果：{full_zip_url}")
             return full_zip_url
 
-def step3_download_unzip(zip_url: str):
-    # 下载文件
+
+def step3_download_unzip(zip_url: str, local_dir_obj: Path,stem : str ):
+    # 1.下载文件
+    # 2.将zip文件保存在本地
+    # 3.清空旧目录
+    # 4.创建新目录
+    # 5.解压文件 可能叫 文件.md 低版本 也可能叫 full.md
+    # 6.
     # 解压文件
-    # state更新
+
     pass
 
 
@@ -145,7 +151,7 @@ def node_pdf_to_md(state: ImportGraphState) -> ImportGraphState:
         #       step2_upload_pdf: 申请、上传pdf文件
         zip_url = step2_upload_pdf(pdf_path_obj)
         #       step3_download_zipfile: 下载解压minerU返回的 解压文件
-        zip_file = step3_download_unzip(zip_url,local_dir_obj)
+        zip_file = step3_download_unzip(zip_url, local_dir_obj, pdf_path_obj.stem)
         return state
     except Exception as e:
         raise e
