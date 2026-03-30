@@ -12,5 +12,9 @@ def node_bge_embedding(state: ImportGraphState) -> ImportGraphState:
     2. 对每个 Chunk 的文本进行 Dense (稠密) 和 Sparse (稀疏) 向量化。
     3. 准备好写入 Milvus 的数据格式。
     """
+    #1. 获取chunks
+    #2. 拿到Embedding客户端
+    #3. 生成向量
+    #4. 存入state
     logger.info(f">>> [Stub] 执行节点: {sys._getframe().f_code.co_name}")
     return state
