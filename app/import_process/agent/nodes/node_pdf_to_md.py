@@ -172,8 +172,6 @@ def node_pdf_to_md(state: ImportGraphState) -> ImportGraphState:
     2. 将 PDF 转换成 Markdown 格式。
     3. 将结果保存到 state["md_content"]。
     """
-
-    #       日志和任务状态
     # 1. 接口开始的日志输出
     task_id = state['task_id']
     function_name = sys._getframe().f_code.co_name
