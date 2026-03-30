@@ -1,8 +1,31 @@
 import sys
+from pathlib import Path
 
 from app.core.logger import logger
 from app.import_process.agent.state import ImportGraphState
 from app.utils.task_utils import add_done_task, add_running_task
+
+
+def step1_get_md_content(state: ImportGraphState):
+    md_path = state["md_path"]
+    if not md_path:
+        raise ValueError("md_path不能为空")
+
+    md_path_obj = Path(md_path)
+    if not md_path_obj.exists():
+        raise FileNotFoundError(f"md_path:{md_path_obj} 文件不存在！")
+
+    if not state["md_content"]:
+        with open(f"{md_path}", "r") as f:
+            md_content = f.read()
+        state["md_content"] = md_content
+    images_dir_obj = md_path_obj.parent / "images"
+    return md_content, md_path_obj, images_dir_obj
+
+
+def step2_process_images(md_content, images_dir_obj) -> list[tuple[str, str, tuple[str, str]]]:
+
+    pass
 
 
 def node_md_img(state: ImportGraphState) -> ImportGraphState:
@@ -21,8 +44,13 @@ def node_md_img(state: ImportGraphState) -> ImportGraphState:
     logger.info(f">>> {function_name} 节点开始执行，现在状态为: {state}")
     add_running_task(task_id, function_name)
     try:
-        # 1. 拿到md文档
+        # 1. 校验数据：、
+        #       参数：state
+        #       响应：md_content
+        md_content, md_path_obj, images_dir_obj = step1_get_md_content(state)
         # 2. 使用正则表达式提取出所有图片
+        #       响应格式：[(图片名，图片地址，(上文,下文))]
+        images_results = step2_process_images(md_content, images_dir_obj)
         # 3. 将图片上传到minio，并且获取其url
         # 4. 截取图片位置上下各100的上下文
         # 5. 将图片及图片上下文 交给视觉大模型生成图片简介
