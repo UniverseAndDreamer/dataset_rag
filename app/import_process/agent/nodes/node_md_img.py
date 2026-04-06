@@ -192,6 +192,7 @@ def node_md_img(state: ImportGraphState) -> ImportGraphState:
 
 
 if __name__ == "__main__":
+
     """本地测试入口：单独运行该文件时，执行MD图片处理全流程测试"""
     from app.utils.path_util import PROJECT_ROOT
     logger.info(f"本地测试 - 项目根目录：{PROJECT_ROOT}")
